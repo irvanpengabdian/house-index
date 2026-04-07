@@ -1,0 +1,53 @@
+# --- PYTHON SPECIFIC ---
+# Abaikan library pihak ketiga di venv (Sangat penting untuk hemat kuota!)
+venv/
+.venv/
+env/
+bin/
+lib/
+share/
+Include/
+Scripts/
+pyvenv.cfg
+
+# Abaikan cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- PROJECT SPECIFIC (House Indexing) ---
+# Abaikan folder tempat menyimpan foto hasil upload mahasiswa
+# Kita tidak ingin AI mencoba "membaca" file gambar binary
+app/static/uploads/
+data/
+images/
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.heic
+
+# --- SECRETS & CONFIG ---
+# Jangan biarkan AI meng-indeks API Key Anda (Demi keamanan)
+.env
+.env.*
+secrets.json
+
+# --- SYSTEM & IDE ---
+.git/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+temp/
+
+# --- DOCUMENTATION ---
+# Jika ada folder riset atau PDF peraturan UGM yang sangat tebal, 
+# lebih baik di-ignore agar tidak memenuhi konteks chat kecuali saat dibutuhkan.
+docs/research/
+*.pdf
