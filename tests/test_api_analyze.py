@@ -56,6 +56,21 @@ class AnalyzeEndpointTests(unittest.TestCase):
         r = self.client.post("/api/v1/analyze", headers=self._auth_headers(), files=files)
         self.assertEqual(r.status_code, 422)
 
+    def test_content_type_mismatch_with_magic_returns_415(self) -> None:
+        os.environ["OPENAI_API_KEY"] = "test-key"
+        from app.core.config import get_settings
+
+        get_settings.cache_clear()
+        jpeg = _make_jpeg_bytes()
+        files = [("files", ("x.png", jpeg, "image/png"))]
+        r = self.client.post(
+            "/api/v1/analyze",
+            headers=self._auth_headers(),
+            data={"student_id": "S1"},
+            files=files,
+        )
+        self.assertEqual(r.status_code, 415)
+
     def test_unsupported_media_type_returns_415(self) -> None:
         # Ensure OPENAI_API_KEY is set so we reach media type validation
         os.environ["OPENAI_API_KEY"] = "test-key"

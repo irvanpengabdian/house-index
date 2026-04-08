@@ -13,6 +13,19 @@ _ALLOWED_MIME: Final[frozenset[str]] = frozenset(
 )
 
 
+def _detect_format_from_magic(data: bytes) -> str | None:
+    """Return canonical MIME if magic bytes match JPEG/PNG/WebP."""
+    if len(data) < 12:
+        return None
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return None
+
+
 async def read_and_validate_upload(
     upload: UploadFile,
     *,
@@ -31,6 +44,17 @@ async def read_and_validate_upload(
             status_code=413,
             detail=f"Image too large. Max {max_bytes} bytes.",
         )
+    magic_mime = _detect_format_from_magic(raw)
+    if magic_mime is None:
+        raise HTTPException(
+            status_code=415,
+            detail="File content is not a valid JPEG, PNG, or WebP image.",
+        )
+    if magic_mime != upload.content_type:
+        raise HTTPException(
+            status_code=415,
+            detail="Content-Type does not match file content (signature mismatch).",
+        )
     return raw
 
 
@@ -39,10 +63,20 @@ def strip_exif_resize_to_jpeg(
     *,
     max_side: int,
     jpeg_quality: int,
+    max_decoded_pixels: int,
 ) -> bytes:
     """Strip metadata by re-encoding; normalize to RGB JPEG for vision API."""
+    old_limit = Image.MAX_IMAGE_PIXELS
     try:
+        Image.MAX_IMAGE_PIXELS = max_decoded_pixels
         with Image.open(io.BytesIO(image_bytes)) as im:
+            im.load()
+            w, h = im.size
+            if w * h > max_decoded_pixels:
+                raise HTTPException(
+                    status_code=413,
+                    detail="Image has too many pixels (possible decompression bomb).",
+                )
             im = ImageOps.exif_transpose(im)
             im = im.convert("RGB")
             w, h = im.size
@@ -59,8 +93,17 @@ def strip_exif_resize_to_jpeg(
                 optimize=True,
             )
             return out.getvalue()
+    except HTTPException:
+        raise
+    except Image.DecompressionBombError as e:
+        raise HTTPException(
+            status_code=413,
+            detail="Image exceeds maximum allowed pixel count.",
+        ) from e
     except OSError as e:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid or corrupted image: {e}",
         ) from e
+    finally:
+        Image.MAX_IMAGE_PIXELS = old_limit

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from app.core.auth import SimasterAuthDep
+from app.core.rate_limit import rate_limit_analyze
 from app.models.house_index import HouseIndexAnalysis
 from app.services.analysis import analyze_house_photos
 
-router = APIRouter(dependencies=[SimasterAuthDep])
+router = APIRouter(
+    dependencies=[SimasterAuthDep, Depends(rate_limit_analyze)],
+)
 
 
 @router.post(

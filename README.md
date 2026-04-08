@@ -51,6 +51,13 @@ SYSTEM_PROMPT_FILE=config/system_prompt.txt
 
 Bisa juga path **absolut** (mis. volume mount di Docker). Jika file tidak ada atau kosong, aplikasi memakai **prompt cadangan** di kode dan menulis peringatan di log.
 
+### Keamanan (ringkas)
+
+- **Validasi file**: magic bytes JPEG/PNG/WebP + harus cocok dengan `Content-Type`; batas piksel decode (`MAX_DECODED_PIXELS`) untuk mitigasi decompression bomb.
+- **Rate limit**: `RATE_LIMIT_ANALYZE_PER_MINUTE` per hash `X-API-KEY` + IP (in-memory; untuk multi-replica gunakan limiter terpusat di proxy/Redis).
+- **Docs**: set `DOCS_ENABLED=false` di production untuk menyembunyikan `/docs` dan `/redoc`.
+- **Docker**: container berjalan sebagai user non-root (`appuser`).
+
 ### Menjalankan server (Windows)
 
 ```powershell

@@ -5,6 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+RUN useradd --no-create-home --uid 10001 appuser
+
 # System deps for Pillow (JPEG/PNG) + TLS certs
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg62-turbo \
@@ -20,6 +22,10 @@ COPY app ./app
 COPY config ./config
 COPY DOCS ./DOCS
 COPY README.md ./README.md
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 

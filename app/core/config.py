@@ -26,6 +26,22 @@ class Settings(BaseModel):
         default="config/system_prompt.txt",
         description="Path to system prompt text file (relative to repo root or absolute)",
     )
+    max_decoded_pixels: int = Field(
+        default=40_000_000,
+        ge=1_000_000,
+        le=200_000_000,
+        description="Reject decoded images exceeding width*height (decompression bomb mitigation)",
+    )
+    rate_limit_analyze_per_minute: int = Field(
+        default=60,
+        ge=0,
+        le=10_000,
+        description="Max /api/v1/analyze calls per minute per X-API-KEY hash + IP; 0 disables",
+    )
+    docs_enabled: bool = Field(
+        default=True,
+        description="Expose /docs and /redoc (disable in production)",
+    )
 
     @model_validator(mode="after")
     def check_image_limits(self) -> Settings:
@@ -54,6 +70,12 @@ def get_settings() -> Settings:
             os.getenv("SYSTEM_PROMPT_FILE", "config/system_prompt.txt").strip()
             or "config/system_prompt.txt"
         ),
+        max_decoded_pixels=int(os.getenv("MAX_DECODED_PIXELS", "40000000")),
+        rate_limit_analyze_per_minute=int(
+            os.getenv("RATE_LIMIT_ANALYZE_PER_MINUTE", "60")
+        ),
+        docs_enabled=os.getenv("DOCS_ENABLED", "true").strip().lower()
+        not in ("0", "false", "no", "off"),
     )
 
 

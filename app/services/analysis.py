@@ -59,6 +59,7 @@ async def analyze_house_photos(
             raw,
             max_side=cfg.max_image_side,
             jpeg_quality=cfg.jpeg_quality,
+            max_decoded_pixels=cfg.max_decoded_pixels,
         )
         jpegs.append(jpeg)
 
@@ -105,7 +106,7 @@ async def analyze_house_photos(
     try:
         data = extract_json_object(text)
     except (ValueError, TypeError) as e:
-        logger.warning("Failed to parse JSON from model: %s", text[:500])
+        logger.warning("Failed to parse JSON from model (truncated): %s", text[:200])
         raise HTTPException(
             status_code=502,
             detail="Invalid analysis response from model.",
@@ -119,7 +120,11 @@ async def analyze_house_photos(
     try:
         return HouseIndexAnalysis.model_validate(data)
     except Exception as e:
-        logger.warning("Pydantic validation failed: %s data=%s", e, data)
+        logger.warning(
+            "Pydantic validation failed: %s (house_index_score=%r)",
+            e,
+            data.get("house_index_score"),
+        )
         raise HTTPException(
             status_code=502,
             detail="Analysis response did not match expected schema.",
