@@ -12,11 +12,12 @@ API Gateway berbasis **FastAPI** untuk menerima 4–5 foto rumah dari Simaster d
 
 ## Prasyarat
 
-- Windows
-- Python 3.x
-- venv aktif (atau gunakan `.\venv\Scripts\python.exe`)
+- **Lokal (tanpa Docker)**: Windows/Linux + Python 3.x
+- **Dengan Docker (disarankan untuk deploy)**: Docker Engine + Docker Compose
 
 ## Setup
+
+### Setup lokal (Windows)
 
 Install dependency:
 
@@ -38,7 +39,19 @@ SIMASTER_API_KEY=isi_kunci_internal_simaster
 OPENAI_API_KEY=isi_openai_api_key
 ```
 
-## Menjalankan server
+### System prompt (tanpa ubah kode)
+
+Teks system prompt untuk GPT-4o dibaca dari file **`config/system_prompt.txt`** (UTF-8). Untuk mengganti atau mengoptimasi prompt, edit file itu lalu **restart** server (atau redeploy container).
+
+Opsional di `.env`:
+
+```env
+SYSTEM_PROMPT_FILE=config/system_prompt.txt
+```
+
+Bisa juga path **absolut** (mis. volume mount di Docker). Jika file tidak ada atau kosong, aplikasi memakai **prompt cadangan** di kode dan menulis peringatan di log.
+
+### Menjalankan server (Windows)
 
 ```powershell
 Set-Location "d:\Project AI\House Index"
@@ -47,6 +60,40 @@ Set-Location "d:\Project AI\House Index"
 
 - Health: `GET http://127.0.0.1:8000/health`
 - Swagger UI: `GET http://127.0.0.1:8000/docs`
+
+### Menjalankan server (Linux/macOS)
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+## Deploy dengan Docker
+
+1) Buat file `.env` dari contoh:
+
+```bash
+cp .env.example .env
+```
+
+2) Isi minimal:
+
+```env
+SIMASTER_API_KEY=...
+OPENAI_API_KEY=...
+```
+
+3) Build & run:
+
+```bash
+docker compose up --build
+```
+
+Server akan tersedia di:
+- `http://localhost:8000/health`
+- `http://localhost:8000/docs`
 
 ## Contoh request (PowerShell + curl.exe)
 

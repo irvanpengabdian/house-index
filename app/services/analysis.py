@@ -12,7 +12,7 @@ from app.models.house_index import HouseIndexAnalysis
 from app.services.image_processing import read_and_validate_upload, strip_exif_resize_to_jpeg
 from app.services.json_parser import extract_json_object
 from app.services.openai_vision import analyze_images_b64_jpeg
-from app.services.prompts import SYSTEM_PROMPT
+from app.services.prompts import get_system_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ async def analyze_house_photos(
         text = await analyze_images_b64_jpeg(
             settings=cfg,
             jpeg_bytes_list=jpegs,
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=get_system_prompt(cfg),
         )
     except APITimeoutError as e:
         logger.warning("OpenAI timeout: %s", e)

@@ -22,6 +22,10 @@ class Settings(BaseModel):
     jpeg_quality: int = Field(default=85, ge=60, le=95)
     min_images_per_request: int = Field(default=1, ge=1, le=20)
     max_images_per_request: int = Field(default=5, ge=1, le=20)
+    system_prompt_file: str = Field(
+        default="config/system_prompt.txt",
+        description="Path to system prompt text file (relative to repo root or absolute)",
+    )
 
     @model_validator(mode="after")
     def check_image_limits(self) -> Settings:
@@ -46,6 +50,10 @@ def get_settings() -> Settings:
         jpeg_quality=int(os.getenv("JPEG_QUALITY", "85")),
         min_images_per_request=int(os.getenv("MIN_IMAGES_PER_REQUEST", "1")),
         max_images_per_request=int(os.getenv("MAX_IMAGES_PER_REQUEST", "5")),
+        system_prompt_file=(
+            os.getenv("SYSTEM_PROMPT_FILE", "config/system_prompt.txt").strip()
+            or "config/system_prompt.txt"
+        ),
     )
 
 

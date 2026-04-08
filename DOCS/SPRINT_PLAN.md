@@ -121,7 +121,7 @@ Simaster → POST (multipart / JSON+URL) → FastAPI (app/api)
 
 ## Hari 7 — Hardening MVP, dokumentasi, & serah terima
 
-**Status:** IN PROGRESS 🟨 (sudah dibuat: `DOCS/API.md`, `DOCS/SECURITY_CHECKLIST.md`, `DOCS/REGRESSION_TESTS.md`, `.gitignore`; tersisa: uji end-to-end dengan API key + demo/serah terima)
+**Status:** DONE ✅ (sudah dibuat: `DOCS/API.md`, `DOCS/SECURITY_CHECKLIST.md`, `DOCS/REGRESSION_TESTS.md`, `README.md`, `.gitignore`; uji end-to-end dengan API key berhasil)
 
 | Aktivitas | Deliverable |
 |-----------|-------------|
